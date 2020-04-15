@@ -43,8 +43,8 @@ def stat_mech_model():
     h = 6.626070e-34
     C = (np.e*m**(3/2)/h**3) * ((4 * np.pi * np.e)/3)**(3/2)
     v = 1.0
-    N = 1.0
-    n = 10.0e19
+    N = 3.0
+    n = 10.0e20
 
     #Populate list array with a range of different entropy values for the 
     #monatomic ideal gas
@@ -53,13 +53,16 @@ def stat_mech_model():
     V = []
     
     #Now calculate the entropy for the Monotomic ideal gas as it goes towards 
-    #increasing temperature values
-    for v in range(1, 110, 1):
-        for t in range(50, 550, 5):
+    #increasing temperature values and increasing volumes 
+    for v in range(1, 110, 10):
+        for t in range(50, 550, 50):
             
-            E_t = v/2 * 1.380649e-23 * t
-            w = C*(v/N)*(E_t/N*n)**(3/2)
-    
+            #Chesson's big brain method
+            #E_t = 1/2 * 1.380649e-23 * t
+            #w = C*(v/N)*(E_t)**(3*N/2)
+            
+            #Dr. Rocklin's Google Method
+            w = (v**N)/np.math.factorial(N) * ((2 * np.pi*m*1.380649e-23*t)/h**2)**(3*N/2)
 
             S.append(1.380649e-23* n* np.log(w))
             T.append(t)
@@ -73,6 +76,7 @@ def stat_mech_model():
     V_arr = np.array(V)
     
     #fig, (ax1, ax2) = plt.subplots(1, 2, sharex = True)
+    #color code based on stability
     
     fig = plt.figure()
     ax3 = fig.add_subplot(111, projection='3d')
