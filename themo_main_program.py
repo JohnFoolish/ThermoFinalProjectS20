@@ -6,16 +6,15 @@ Created on Tue Apr 14 17:37:27 2020
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import math
-import pandas 
 import argparse as arg
 from graph_class import graph_data
 
 def get_range_interval(range_data):
     diff = range_data[1] - range_data[0]
-    factor = diff // 10
+    if (diff < 10):
+        factor = 1
+    else:    
+        factor = diff // 10
     remainder = diff % factor 
     
     return (range_data[0], range_data[1] + remainder + 1, factor)
@@ -230,7 +229,7 @@ def VDW_classical_model(simulation_data):
             else:
                 
                 #At constant Volume, stability is found through dE/dT > 0.
-                C_v = 1 #(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
+                C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
                 
                 if(C_v > 0):
                     stable = True
@@ -362,7 +361,7 @@ def Ideal_classical_model(simulation_data):
             else:
                 
                 #At constant Volume, stability is found through dE/dT > 0.
-                C_v = 1 #(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
+                C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
                 
                 if(C_v > 0):
                     stable = True
@@ -417,10 +416,10 @@ def Ideal_statmech_model(simulation_data):
     """
 
     #Fill in some dummy values for the Entropy Equation
-    m = 1.67e-27
-    h = 6.626070e-34
-    v = 1.0
-    N = 6.02e23
+    m = 1.67e-27 #kg
+    h = 6.626070e-34 #Plankl
+    v = 1.0 #L
+    N = 6.02e23 #Num part
     t = 273
     P = 1
 
@@ -488,7 +487,7 @@ def Ideal_statmech_model(simulation_data):
             else:
                 
                 #At constant Volume, stability is found through dE/dT > 0.
-                C_v = 1 #(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
+                C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
                 
                 if(C_v > 0):
                     stable = True
