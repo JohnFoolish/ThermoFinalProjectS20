@@ -65,7 +65,7 @@ class graph_data:
             self.count = self.count - 1
             
         if (self.count <= 0):           
-            self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color, label = point_label)
+            self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color)#, label = point_label)
             self.count = self.count + 1
         else:
             self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color)
@@ -77,8 +77,14 @@ class graph_data:
         self.ax1.set_ylabel(self.ylabel)
         self.ax1.set_zlabel(self.zlabel)
         
-        self.ax1.legend()
+        #self.ax1.legend()
         plt.title(self.model_type)
+        if (self.model_type[0] == "%"):
+            plt.axis([self.xrange[0], self.xrange[1], self.yrange[1], self.yrange[0]])
+            self.model_type = self.model_type[2:]
+        else:
+            plt.axis([self.xrange[1], self.xrange[0], self.yrange[0], self.yrange[1]])
 
-        plt.show()
-        
+        #plt.show()
+        plt.savefig("graphs/"+self.model_type+","+self.var1+","+self.var2+".png", transparent = True, bbox_inches='tight')
+        plt.close()
