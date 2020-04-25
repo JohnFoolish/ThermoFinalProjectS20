@@ -17,8 +17,10 @@ To generate the plots, you must download the thermo_main_program.py as
 well as graph_class.py and have numpy and matplotlib modules installed
 in python. Once this has been done, run the thermo_main_program from 
 your command line with the following format:
-\n
+
+
 python3 thermo_main_program.py [State Variable 1] [start of range]
 [end of range] [State Variable 2] [start of range] [end of range]
-\n
+
+
 With this done, the plots should automatically be displayed.
