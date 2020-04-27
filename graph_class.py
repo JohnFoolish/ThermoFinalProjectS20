@@ -20,7 +20,8 @@ class graph_data:
         self.var2 = ""
         self.fig1 = plt.figure()
         self.ax1 = self.fig1.add_subplot(111, projection='3d')
-        self.count = 0
+        self.redcount = 0
+        self.greencount = 0
         
         name = xlabel.upper()
         if (name == "T" or name == "TEMPERATURE"):
@@ -56,19 +57,33 @@ class graph_data:
                 
     def plot_point(self, xpoint, ypoint, zpoint, stable):
         
-        if (stable):
+        
+        if (stable == 2):
+            point_color = 'blue'
+            point_label = 'Metastable Points'
+            if self.greencount < 1:
+                self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color, label = point_label)
+                self.greencount = self.greencount + 1
+            else:
+                self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color) 
+        elif (stable):
             point_color = 'green'
-            point_label = 'Stable'
+            point_label = 'Stable Points'
+            if self.greencount < 1:
+                self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color, label = point_label)
+                self.greencount = self.greencount + 1
+            else:
+                self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color)
+                      
         else:
             point_color = 'red'
-            point_label = 'Unstable'
-            self.count = self.count - 1
-            
-        if (self.count <= 0):           
-            self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color)#, label = point_label)
-            self.count = self.count + 1
-        else:
-            self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color)
+            point_label = 'Unstable Points'
+            if self.redcount < 1:
+                self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color, label = point_label)
+                self.redcount = self.redcount + 1
+            else:
+                self.scatter = self.ax1.scatter(xpoint, ypoint, zpoint, c = point_color)
+        
 
 
     def display(self):
@@ -77,7 +92,7 @@ class graph_data:
         self.ax1.set_ylabel(self.ylabel)
         self.ax1.set_zlabel(self.zlabel)
         
-        #self.ax1.legend()
+        self.ax1.legend()
         plt.title(self.model_type)
         if (self.model_type[0] == "%"):
             plt.axis([self.xrange[0], self.xrange[1], self.yrange[1], self.yrange[0]])
@@ -85,6 +100,6 @@ class graph_data:
         else:
             plt.axis([self.xrange[1], self.xrange[0], self.yrange[0], self.yrange[1]])
 
-        #plt.show()
-        plt.savefig("graphs/"+self.model_type+","+self.var1+","+self.var2+".png", transparent = True, bbox_inches='tight')
-        plt.close()
+        plt.show()
+        #plt.savefig("graphs/"+self.model_type+","+self.var1+","+self.var2+"fixed.png", transparent = True, bbox_inches='tight')
+        #plt.close()

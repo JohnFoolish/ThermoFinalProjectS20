@@ -2,7 +2,9 @@
 """
 Created on Tue Apr 14 17:37:27 2020
 
-@author: John Lewis Corker and Somil Joshi
+@authors: John Lewis Corker and Somil Joshi
+
+@version 7
 """
 
 import numpy as np
@@ -20,7 +22,20 @@ def get_range_interval(range_data, num_points = 20):
     return (range_data[0], range_data[1] + remainder + 1, factor)
 
 def main():
+    """
+    This is the main function of the state space grapher. From the project 
+    members John Lewis, Somil, and Chesson, we apologize for the mess of 
+    documentation you will find in the code. You can find all the information
+    about how to run the program from the command line on the README.
     
+    This method takes in command line arguments and then feeds them into the 
+    different scenarios in order to create the 3-D projections of 4-D state
+    space.
+    
+    If you have any questions about the functioning of the code, please email
+    jcorker3@gatech.edu.
+    
+    """
     
     state_variables = ['energy', 'temperature', 'volume', 'pressure', 'Energy',
                        'Temperature', 'Volume', 'Pressure', 'E', 'T', 'V', 'P', 'U']
@@ -58,7 +73,9 @@ def main():
                              + " the second varying state variable.")
     state_var_2.add_argument("End_2", type = int, help = "The ending value for the"
                              + " second varying state variable.")
-    
+    state_var_2.add_argument("--fixed_VDW", type =bool, help = "Enables the pressure"
+                             + " dependent VDW gas graphing... does not work if your"
+                             + " two state variables are pressure and volume.")
 
     simulation_data = parser.parse_args()
     
@@ -159,9 +176,9 @@ def VDW_classical_model(simulation_data):
     T = 273
     P = 1
     
-    # Van der Waals constants for hydrogen gas
-    a = 0.2453
-    b = 0.02651
+    # Van der Waals constants for helium gas
+    a = 0.03646
+    b = 0.0238
     N = 1.0
 
     # Populate list array with a range of different entropy values
@@ -186,8 +203,14 @@ def VDW_classical_model(simulation_data):
     var_1 = graph_data_class.var1
     var_2 = graph_data_class.var2
 
+    fixed_vdw = simulation_data.fixed_VDW
+
     # Now calculate the entropy for VDW gas as it goes towards
     # increasing temperature values
+    i = 1
+    j = 0
+    k = 1
+    l = 0
     for sv1 in range(range_data_1[0], range_data_1[1], range_data_1[2]):
         for sv2 in range(range_data_2[0], range_data_2[1], range_data_2[2]):
             
@@ -210,45 +233,95 @@ def VDW_classical_model(simulation_data):
             elif (var_2 == "v"):
                 V = sv2
             
-            v = V / N
+            
             if (var_1 != "u" and var_2 != "u"):    
                 U = (3 / 2) * R * T
-            u = U /N
+            u = U /N     
             
-            s = (c*R)*np.log(u + a/v) + R*np.log(v - b)
-            
-            #Add the data to the list
-            Slist.append(s * N)
-            Ulist.append(U)
-            Vlist.append(V)
-            Tlist.append(T)
-        
-            
-            if (len(Slist) < 2):
-                stable = True
+            if (fixed_vdw):
+                if (var_1 == "p" or var_2 == "p"):                
+                    
+                    if (var_2 == "t" or var_1 == "t"):
+                        poly = np.polynomial.Polynomial([-(a*b)/p, (a/b), -(b + (R*T)/p), 1])
+                        V = poly.roots()
+                        V_real = V.real[abs(V.imag)<1e-5]
+    
+                    elif (var_2 == "u" or var_1 == "u"):
+                        poly = np.polynomial.Polynomial([-(a*b)/p, (a/b), -(b + ((u*2)/(3*R))/p), 1])
+                        V = poly.roots()
+                        V_real = V.real[abs(V.imag)<1e-5]
+                        
+                    elif (var_2 == "v" or var_1 == "v"):
+                        T = (p * (V - b) + a*(1/V)**2*(V-b))/R
+                        V_real = [V]
+                
             else:
+                V_real = [V]
                 
-                #At constant Volume, stability is found through dE/dT > 0.
-                C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
+            if (var_1 != "u" and var_2 != "u"):    
+                U = (3 / 2) * R * T
+            u = U /N     
+            #print(V)        
+            Ulist.append(U)
+            Tlist.append(T)
+            Plist.append(p)
+            for V_item in V_real:  
                 
-                if(C_v > 0):
+                #print(V_item)
+                v = V_item / N  
+                u = U /N
+                Vlist.append(v)                
+                s = (c*R)*np.log(u + a/v) + R*np.log(v - b)
+                
+                #Add the data to the list
+                Slist.append(s * N)
+                
+                
+                if (len(Plist) < 2):
                     stable = True
+                    i = 0
+                    j = -1
                 else:
-                    stable = False
+                    if (fixed_vdw):
+                        #At constant Volume, stability is found through dE/dT > 0.
+                        if (var_1 == "p" or var_2 == "p"):
+                            if (Vlist[k] == Vlist[l]):
+                                stable = True
+                            else:    
+                                stab_test = (Plist[i] - Plist[j])/(Vlist[k] - Vlist[l])
+                                k = k + 1
+                                l = l + 1
+                                #print(stab_test)
+                                if stab_test > 0:
+                                    stable = 0
+                                elif stab_test < 0:
+                                    stable = 1
+                                else:
+                                    stable = 2
+                        else:     
+                            
+                            C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
+                            
+                            if(C_v > 0):
+                                stable = True
+                            else:
+                                stable = False
+                    else:
+                        stable = True
+                    #Reset the list so that we accurately calculate the stability 
+                    #for each point
+                    #tmpU = Ulist[1]
+                    #tmpT = Tlist[1]
+                    #Ulist.clear()
+                    #Tlist.clear()
+                    #Ulist.append(tmpU)
+                    #Tlist.append(tmpT)
                 
-                #Reset the list so that we accurately calculate the stability 
-                #for each point
-                tmpU = Ulist[1]
-                tmpT = Tlist[1]
-                Ulist.clear()
-                Tlist.clear()
-                Ulist.append(tmpU)
-                Tlist.append(tmpT)
-            
-            
-            
-            graph_data_class.plot_point(sv1, sv2, s, stable)
-            
+                
+                
+                graph_data_class.plot_point(sv1, sv2, s, stable)
+            i = i + 1
+            j = j + 1
             
     graph_data_class.display()
     return Slist
@@ -323,6 +396,10 @@ def Ideal_classical_model(simulation_data):
 
     # Now calculate the entropy for VDW gas as it goes towards
     # increasing temperature values
+    i = 1
+    j = 0
+    k = 1
+    l = 0
     for sv1 in range(range_data_1[0], range_data_1[1], range_data_1[2]):
         for sv2 in range(range_data_2[0], range_data_2[1], range_data_2[2]):
             
@@ -347,7 +424,15 @@ def Ideal_classical_model(simulation_data):
             
             if (var_1 != "u" and var_2 != "u"):    
                 U = (3 / 2) * R * T           
-            
+                
+            if (var_1 == "p" or var_2 == "p"):
+                if (var_2 == "t" or var_1 == "t"):
+                    V = (T*N*R)/P
+                elif (var_2 == "u" or var_1 == "u"):
+                    V = (U*2*N*R)/(3*P*R)
+                elif (var_2 == "v" or var_1 == "v"):
+                    U = (3 * P * V ) / (2 * N)
+        
             v = V / N
             u = U /N
             s = (c*R)*np.log(u) + R*np.log(v)
@@ -356,26 +441,41 @@ def Ideal_classical_model(simulation_data):
             Vlist.append(V)
             Tlist.append(T)
 
-            if (len(Slist) < 2):
+
+            if (len(Plist) < 2):
                 stable = True
+                i = 0
+                j = -1
             else:
                 
                 #At constant Volume, stability is found through dE/dT > 0.
-                C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
+                if (var_1 == "p" or var_2 == "p"):
+                    stab_test = (Plist[i] - Plist[j])/(Vlist[k] - Vlist[l])
+                    k = k + 1
+                    l = l + 1
+                    #print(stab_test)
+                    if stab_test > 0:
+                        stable = 0
+                    elif (stab_test < 0):
+                        stable = 1
+                    else:
+                        stable = 2
+                else:#At constant Volume, stability is found through dE/dT > 0.
+                    C_v = 1#(Ulist[1] - Ulist[0])/(Tlist[1] - Tlist[0])
                 
-                if(C_v > 0):
-                    stable = True
-                else:
-                    stable = False
+                    if(C_v > 0):
+                        stable = True
+                    else:
+                        stable = False
                 
                 #Reset the list so that we accurately calculate the stability 
                 #for each point
-                tmpU = Ulist[1]
-                tmpT = Tlist[1]
-                Ulist.clear()
-                Tlist.clear()
-                Ulist.append(tmpU)
-                Tlist.append(tmpT)
+                #tmpU = Ulist[1]
+                #tmpT = Tlist[1]
+                #Ulist.clear()
+                #list.clear()
+                #Ulist.append(tmpU)
+                #Tlist.append(tmpT)
             
             
             
@@ -416,7 +516,7 @@ def Ideal_statmech_model(simulation_data):
     """
 
     #Fill in some dummy values for the Entropy Equation
-    m = 1.67e-27 #kg
+    m = 6.647e-27 #kg
     h = 6.626070e-34 #Plankl
     v = 1.0 #L
     N = 6.02e23 #Num part

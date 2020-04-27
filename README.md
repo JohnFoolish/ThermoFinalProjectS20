@@ -18,9 +18,13 @@ well as graph_class.py and have numpy and matplotlib modules installed
 in python. Once this has been done, run the thermo_main_program from 
 your command line with the following format:
 
-
 python3 thermo_main_program.py [State Variable 1] [start of range]
 [end of range] [State Variable 2] [start of range] [end of range]
 
-
 With this done, the plots should automatically be displayed.
+
+There is an additional mode to generate the 3-D projections of 4-D 
+state space which have been corrected for graphing the pressure 
+state space. To enable this, after [end of range] add the following
+flag: "--fixed_VDW True". This feature corrects some, but not all, 
+of the errors with the modeling.
