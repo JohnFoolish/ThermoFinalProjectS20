@@ -14,8 +14,10 @@ while the other is done microscopically with statistical mechanics.
 
 #RUNNING THE CODE#
 To generate the plots, you must download the thermo_main_program.py as 
-well as graph_class.py and have numpy and matplotlib modules installed
-in python. Once this has been done, run the thermo_main_program from 
+well as graph_class.py. They both depend on matplotlib and numpy, so 
+you must have those in your python path as well. 
+
+Once this has been done, run the thermo_main_program from 
 your command line with the following format:
 
 python3 thermo_main_program.py [State Variable 1] [start of range]
